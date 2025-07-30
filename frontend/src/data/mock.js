@@ -117,8 +117,8 @@ export const gallery = [
 ];
 
 export const socialLinks = {
-  facebook: "#",
-  instagram: "#", 
+  facebook: "https://www.facebook.com/Ricardopopoficial",
+  instagram: "https://www.instagram.com/ricardopoparaujo", 
   twitter: "#",
   youtube: "#",
   spotify: "#"
