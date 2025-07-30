@@ -26,6 +26,7 @@ const Home = () => {
       <Gallery />
       <Contact />
       <Footer />
+      <Toaster />
     </div>
   );
 };
