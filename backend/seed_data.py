@@ -5,6 +5,13 @@ Seed data script to populate the database with initial data
 from database import database
 import asyncio
 import logging
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables
+ROOT_DIR = Path(__file__).parent
+load_dotenv(ROOT_DIR / '.env')
 
 logger = logging.getLogger(__name__)
 
