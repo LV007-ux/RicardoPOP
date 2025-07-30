@@ -12,6 +12,7 @@ import Shows from "./components/Shows";
 import Gallery from "./components/Gallery";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
+import { Toaster } from "./components/ui/toaster";
 
 const Home = () => {
   return (
