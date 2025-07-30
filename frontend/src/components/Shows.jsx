@@ -1,10 +1,12 @@
 import React from 'react';
-import { shows } from '../data/mock';
-import { Calendar, MapPin, Clock, Ticket } from 'lucide-react';
+import { useShows } from '../hooks/useApi';
+import { Calendar, MapPin, Clock, Ticket, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 
 const Shows = () => {
+  const { data: shows, loading, error } = useShows();
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('pt-BR', { 
@@ -14,6 +16,30 @@ const Shows = () => {
       day: 'numeric' 
     });
   };
+
+  if (loading) {
+    return (
+      <section id="shows" className="py-20 bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 text-white relative overflow-hidden">
+        <div className="container mx-auto px-6 flex items-center justify-center">
+          <div className="flex items-center space-x-3">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
+            <span className="text-xl">Carregando shows...</span>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error || !shows) {
+    return (
+      <section id="shows" className="py-20 bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 text-white relative overflow-hidden">
+        <div className="container mx-auto px-6 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">PRÓXIMOS SHOWS</h2>
+          <p className="text-red-400">Erro ao carregar agenda de shows</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="shows" className="py-20 bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 text-white relative overflow-hidden">
@@ -34,58 +60,65 @@ const Shows = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-          {shows.map((show, index) => (
-            <Card key={show.id} className="bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/15 transition-all duration-300 group">
-              <CardContent className="p-8">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="space-y-3">
-                    <div className="flex items-center text-red-400">
-                      <Calendar className="w-5 h-5 mr-3" />
-                      <span className="text-sm font-medium uppercase tracking-wide">
-                        {formatDate(show.date)}
-                      </span>
+        {shows.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-xl text-gray-300 mb-4">Nenhum show agendado no momento</p>
+            <p className="text-gray-400">Fique ligado nas redes sociais para próximos anúncios!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            {shows.map((show, index) => (
+              <Card key={show.id} className="bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/15 transition-all duration-300 group">
+                <CardContent className="p-8">
+                  <div className="flex items-start justify-between mb-6">
+                    <div className="space-y-3">
+                      <div className="flex items-center text-red-400">
+                        <Calendar className="w-5 h-5 mr-3" />
+                        <span className="text-sm font-medium uppercase tracking-wide">
+                          {formatDate(show.date)}
+                        </span>
+                      </div>
+                      
+                      <h3 className="text-2xl font-bold text-white group-hover:text-red-400 transition-colors">
+                        {show.venue}
+                      </h3>
+                    </div>
+
+                    <div className={`px-3 py-1 rounded-full text-xs font-medium uppercase tracking-wide ${
+                      show.status === 'confirmed' 
+                        ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                        : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                    }`}>
+                      {show.status === 'confirmed' ? 'Confirmado' : 'Em breve'}
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 mb-8">
+                    <div className="flex items-center text-gray-300">
+                      <MapPin className="w-5 h-5 mr-3 text-blue-400" />
+                      <span>{show.location}</span>
                     </div>
                     
-                    <h3 className="text-2xl font-bold text-white group-hover:text-red-400 transition-colors">
-                      {show.venue}
-                    </h3>
+                    <div className="flex items-center text-gray-300">
+                      <Clock className="w-5 h-5 mr-3 text-purple-400" />
+                      <span>{show.time}</span>
+                    </div>
                   </div>
 
-                  <div className={`px-3 py-1 rounded-full text-xs font-medium uppercase tracking-wide ${
-                    show.status === 'confirmed' 
-                      ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                      : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                  }`}>
-                    {show.status === 'confirmed' ? 'Confirmado' : 'Em breve'}
+                  <div className="flex gap-3">
+                    <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white transition-all duration-300 group-hover:scale-105">
+                      <Ticket className="w-4 h-4 mr-2" />
+                      Mais Informações
+                    </Button>
+                    <Button variant="outline" className="border-white/30 text-white hover:bg-white hover:text-slate-900">
+                      Compartilhar
+                    </Button>
                   </div>
-                </div>
-
-                <div className="space-y-4 mb-8">
-                  <div className="flex items-center text-gray-300">
-                    <MapPin className="w-5 h-5 mr-3 text-blue-400" />
-                    <span>{show.location}</span>
-                  </div>
-                  
-                  <div className="flex items-center text-gray-300">
-                    <Clock className="w-5 h-5 mr-3 text-purple-400" />
-                    <span>{show.time}</span>
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white transition-all duration-300 group-hover:scale-105">
-                    <Ticket className="w-4 h-4 mr-2" />
-                    Mais Informações
-                  </Button>
-                  <Button variant="outline" className="border-white/30 text-white hover:bg-white hover:text-slate-900">
-                    Compartilhar
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
         {/* Call to Action */}
         <div className="text-center mt-16">

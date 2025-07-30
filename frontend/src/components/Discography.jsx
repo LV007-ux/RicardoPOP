@@ -1,10 +1,36 @@
 import React from 'react';
-import { discography } from '../data/mock';
-import { Play, Calendar, Music, ExternalLink } from 'lucide-react';
+import { useDiscography } from '../hooks/useApi';
+import { Play, Calendar, Music, ExternalLink, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 
 const Discography = () => {
+  const { data: discography, loading, error } = useDiscography();
+
+  if (loading) {
+    return (
+      <section id="discografia" className="py-20 bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="container mx-auto px-6 flex items-center justify-center">
+          <div className="flex items-center space-x-3">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            <span className="text-xl text-slate-600">Carregando discografia...</span>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error || !discography) {
+    return (
+      <section id="discografia" className="py-20 bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="container mx-auto px-6 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold text-slate-800 mb-6">DISCOGRAFIA</h2>
+          <p className="text-red-600">Erro ao carregar discografia</p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="discografia" className="py-20 bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="container mx-auto px-6">
@@ -25,9 +51,9 @@ const Discography = () => {
                 <div className="flex flex-col md:flex-row">
                   {/* Album Cover */}
                   <div className="relative md:w-1/2 aspect-square bg-gradient-to-br from-slate-800 to-blue-900 flex items-center justify-center overflow-hidden">
-                    {index === 0 ? (
+                    {album.cover && album.cover.includes('customer-assets') ? (
                       <img 
-                        src="https://customer-assets.emergentagent.com/job_83361586-94c2-4a5b-965e-7f1f86246a58/artifacts/qkemigoh_ChatGPT%20Image%208%20de%20jul.%20de%202025%2C%2011_00_18.png"
+                        src={album.cover}
                         alt={album.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />

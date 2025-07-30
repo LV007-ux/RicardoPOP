@@ -1,8 +1,10 @@
 import React from 'react';
-import { trajectory } from '../data/mock';
-import { Calendar, MapPin, Music2 } from 'lucide-react';
+import { useTrajectory } from '../hooks/useApi';
+import { Calendar, MapPin, Music2, Loader2 } from 'lucide-react';
 
 const Trajectory = () => {
+  const { data: trajectory, loading, error } = useTrajectory();
+
   const events = [
     "Sob o Céu Sob o Sol",
     "Espraiado de Portas Abertas", 
@@ -10,6 +12,30 @@ const Trajectory = () => {
     "Festival Rua & Sabor",
     "Maricá Musical"
   ];
+
+  if (loading) {
+    return (
+      <section id="trajetoria" className="py-20 bg-gradient-to-br from-purple-900 via-slate-900 to-blue-900 text-white relative overflow-hidden">
+        <div className="container mx-auto px-6 flex items-center justify-center">
+          <div className="flex items-center space-x-3">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
+            <span className="text-xl">Carregando trajetória...</span>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error || !trajectory) {
+    return (
+      <section id="trajetoria" className="py-20 bg-gradient-to-br from-purple-900 via-slate-900 to-blue-900 text-white relative overflow-hidden">
+        <div className="container mx-auto px-6 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">TRAJETÓRIA</h2>
+          <p className="text-red-400">Erro ao carregar informações da trajetória</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="trajetoria" className="py-20 bg-gradient-to-br from-purple-900 via-slate-900 to-blue-900 text-white relative overflow-hidden">

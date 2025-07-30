@@ -1,8 +1,10 @@
 import React from 'react';
-import { socialLinks } from '../data/mock';
-import { Music, Mail, Phone, MapPin, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
+import { useContactInfo, useSocialLinks } from '../hooks/useApi';
+import { Music, Mail, Phone, MapPin, Facebook, Instagram, Twitter, Youtube, Loader2 } from 'lucide-react';
 
 const Footer = () => {
+  const { data: contactInfo, loading: contactLoading } = useContactInfo();
+  const { data: socialLinks, loading: socialLoading } = useSocialLinks();
   const currentYear = new Date().getFullYear();
 
   const socialIcons = {
@@ -50,22 +52,29 @@ const Footer = () => {
               misturando pop rock, MPB e forronejo com autenticidade e paixão.
             </p>
 
-            <div className="flex space-x-4">
-              {Object.entries(socialLinks).map(([platform, url]) => {
-                const Icon = socialIcons[platform];
-                return (
-                  <a
-                    key={platform}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-white/10 hover:bg-gradient-to-r hover:from-red-500 hover:to-blue-500 p-3 rounded-full transition-all duration-300 transform hover:scale-110"
-                  >
-                    <Icon className="w-5 h-5" />
-                  </a>
-                );
-              })}
-            </div>
+            {socialLoading ? (
+              <div className="flex items-center space-x-3">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Carregando...</span>
+              </div>
+            ) : (
+              <div className="flex space-x-4">
+                {socialLinks && Object.entries(socialLinks).map(([platform, url]) => {
+                  const Icon = socialIcons[platform];
+                  return (
+                    <a
+                      key={platform}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-white/10 hover:bg-gradient-to-r hover:from-red-500 hover:to-blue-500 p-3 rounded-full transition-all duration-300 transform hover:scale-110"
+                    >
+                      <Icon className="w-5 h-5" />
+                    </a>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Quick Links */}
@@ -88,20 +97,27 @@ const Footer = () => {
           {/* Contact Info */}
           <div>
             <h4 className="text-lg font-semibold mb-6">Contato</h4>
-            <div className="space-y-4">
+            {contactLoading ? (
               <div className="flex items-center space-x-3">
-                <Mail className="w-5 h-5 text-red-400" />
-                <span className="text-gray-300 text-sm">contato@ricardopop.com.br</span>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span className="text-sm">Carregando...</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <Phone className="w-5 h-5 text-blue-400" />
-                <span className="text-gray-300 text-sm">+55 (21) 99999-9999</span>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <Mail className="w-5 h-5 text-red-400" />
+                  <span className="text-gray-300 text-sm">{contactInfo?.email || 'contato@ricardopop.com.br'}</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Phone className="w-5 h-5 text-blue-400" />
+                  <span className="text-gray-300 text-sm">{contactInfo?.phone || '+55 (21) 99999-9999'}</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <MapPin className="w-5 h-5 text-purple-400" />
+                  <span className="text-gray-300 text-sm">{contactInfo?.city || 'Maricá, RJ'}</span>
+                </div>
               </div>
-              <div className="flex items-center space-x-3">
-                <MapPin className="w-5 h-5 text-purple-400" />
-                <span className="text-gray-300 text-sm">Maricá, RJ</span>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
