@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { contactInfo, socialLinks } from '../data/mock';
-import { Mail, Phone, MapPin, Send, Facebook, Instagram, Twitter, Youtube, Music } from 'lucide-react';
+import { useContactInfo, useSocialLinks } from '../hooks/useApi';
+import { apiService } from '../services/api';
+import { Mail, Phone, MapPin, Send, Facebook, Instagram, Twitter, Youtube, Music, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Input } from './ui/input';
@@ -8,13 +9,17 @@ import { Textarea } from './ui/textarea';
 import { useToast } from '../hooks/use-toast';
 
 const Contact = () => {
+  const { data: contactInfo, loading: contactLoading } = useContactInfo();
+  const { data: socialLinks, loading: socialLoading } = useSocialLinks();
+  const { toast } = useToast();
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     subject: '',
     message: ''
   });
-  const { toast } = useToast();
+  const [submitting, setSubmitting] = useState(false);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -23,14 +28,31 @@ const Contact = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Mock form submission
-    toast({
-      title: "Mensagem enviada!",
-      description: "Entraremos em contato em breve.",
-    });
-    setFormData({ name: '', email: '', subject: '', message: '' });
+    setSubmitting(true);
+    
+    try {
+      const response = await apiService.sendContactMessage(formData);
+      
+      if (response.success) {
+        toast({
+          title: "Mensagem enviada!",
+          description: "Entraremos em contato em breve.",
+        });
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      } else {
+        throw new Error(response.message);
+      }
+    } catch (error) {
+      toast({
+        title: "Erro ao enviar mensagem",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive"
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const socialIcons = {
@@ -60,65 +82,79 @@ const Contact = () => {
             <div>
               <h3 className="text-2xl font-bold mb-8">Vamos conversar</h3>
               
-              <div className="space-y-6">
-                <div className="flex items-start space-x-4">
-                  <div className="bg-red-600 p-3 rounded-full">
-                    <Mail className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-lg mb-1">Email</h4>
-                    <p className="text-gray-300">{contactInfo.email}</p>
-                  </div>
+              {contactLoading ? (
+                <div className="flex items-center space-x-3">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Carregando informações...</span>
                 </div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="bg-red-600 p-3 rounded-full">
+                      <Mail className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-lg mb-1">Email</h4>
+                      <p className="text-gray-300">{contactInfo?.email}</p>
+                    </div>
+                  </div>
 
-                <div className="flex items-start space-x-4">
-                  <div className="bg-blue-600 p-3 rounded-full">
-                    <Phone className="w-6 h-6" />
+                  <div className="flex items-start space-x-4">
+                    <div className="bg-blue-600 p-3 rounded-full">
+                      <Phone className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-lg mb-1">Telefone</h4>
+                      <p className="text-gray-300">{contactInfo?.phone}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-lg mb-1">Telefone</h4>
-                    <p className="text-gray-300">{contactInfo.phone}</p>
-                  </div>
-                </div>
 
-                <div className="flex items-start space-x-4">
-                  <div className="bg-purple-600 p-3 rounded-full">
-                    <MapPin className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-lg mb-1">Localização</h4>
-                    <p className="text-gray-300">{contactInfo.city}</p>
+                  <div className="flex items-start space-x-4">
+                    <div className="bg-purple-600 p-3 rounded-full">
+                      <MapPin className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-lg mb-1">Localização</h4>
+                      <p className="text-gray-300">{contactInfo?.city}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Social Links */}
             <div>
               <h3 className="text-2xl font-bold mb-6">Redes Sociais</h3>
-              <div className="flex space-x-4">
-                {Object.entries(socialLinks).map(([platform, url]) => {
-                  const Icon = socialIcons[platform];
-                  return (
-                    <a
-                      key={platform}
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-white/10 hover:bg-white/20 p-3 rounded-full transition-colors duration-300"
-                    >
-                      <Icon className="w-6 h-6" />
-                    </a>
-                  );
-                })}
-              </div>
+              {socialLoading ? (
+                <div className="flex items-center space-x-3">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Carregando redes sociais...</span>
+                </div>
+              ) : (
+                <div className="flex space-x-4">
+                  {socialLinks && Object.entries(socialLinks).map(([platform, url]) => {
+                    const Icon = socialIcons[platform];
+                    return (
+                      <a
+                        key={platform}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-white/10 hover:bg-white/20 p-3 rounded-full transition-colors duration-300"
+                      >
+                        <Icon className="w-6 h-6" />
+                      </a>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Manager Info */}
             <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
               <CardContent className="p-6">
                 <h4 className="font-semibold text-lg mb-2 text-white">Assessoria</h4>
-                <p className="text-gray-300 mb-4">{contactInfo.manager}</p>
+                <p className="text-gray-300 mb-4">{contactInfo?.manager || 'Assessoria Musical'}</p>
                 <p className="text-sm text-gray-400">
                   Para contratações e parcerias comerciais
                 </p>
@@ -142,6 +178,7 @@ const Contact = () => {
                       onChange={handleInputChange}
                       className="bg-white/10 border-white/20 text-white placeholder-gray-400"
                       required
+                      disabled={submitting}
                     />
                   </div>
                   <div>
@@ -153,6 +190,7 @@ const Contact = () => {
                       onChange={handleInputChange}
                       className="bg-white/10 border-white/20 text-white placeholder-gray-400"
                       required
+                      disabled={submitting}
                     />
                   </div>
                 </div>
@@ -166,6 +204,7 @@ const Contact = () => {
                     onChange={handleInputChange}
                     className="bg-white/10 border-white/20 text-white placeholder-gray-400"
                     required
+                    disabled={submitting}
                   />
                 </div>
 
@@ -177,15 +216,26 @@ const Contact = () => {
                     onChange={handleInputChange}
                     className="bg-white/10 border-white/20 text-white placeholder-gray-400 min-h-32"
                     required
+                    disabled={submitting}
                   />
                 </div>
 
                 <Button 
                   type="submit" 
                   className="w-full bg-gradient-to-r from-red-600 to-blue-600 hover:from-red-700 hover:to-blue-700 text-white py-3 text-lg"
+                  disabled={submitting}
                 >
-                  <Send className="w-5 h-5 mr-2" />
-                  Enviar Mensagem
+                  {submitting ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-5 h-5 mr-2" />
+                      Enviar Mensagem
+                    </>
+                  )}
                 </Button>
               </form>
             </CardContent>

@@ -1,9 +1,33 @@
 import React from 'react';
-import { artistInfo } from '../data/mock';
-import { Music, Play } from 'lucide-react';
+import { useArtistInfo } from '../hooks/useApi';
+import { Music, Play, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 
 const Hero = () => {
+  const { data: artistInfo, loading, error } = useArtistInfo();
+
+  if (loading) {
+    return (
+      <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
+        <div className="flex items-center space-x-3">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
+          <span className="text-xl">Carregando...</span>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold mb-4">RICARDO POP</h1>
+          <p className="text-red-400">Erro ao carregar informações</p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white overflow-hidden">
       {/* Background Pattern */}
@@ -19,24 +43,24 @@ const Hero = () => {
           {/* Artist Name */}
           <h1 className="text-6xl md:text-8xl font-bold mb-4 tracking-tight">
             <span className="bg-gradient-to-r from-white via-blue-100 to-red-200 bg-clip-text text-transparent">
-              {artistInfo.name}
+              {artistInfo?.name || 'RICARDO POP'}
             </span>
           </h1>
           
           {/* Tagline */}
           <h2 className="text-2xl md:text-3xl font-light mb-8 text-blue-200">
-            {artistInfo.tagline}
+            {artistInfo?.tagline || 'Que mistura é essa!'}
           </h2>
 
           {/* Years Badge */}
           <div className="inline-flex items-center bg-red-600/20 border border-red-500/30 rounded-full px-6 py-3 mb-8">
             <Music className="w-5 h-5 mr-2 text-red-400" />
-            <span className="text-lg font-medium">+ de {artistInfo.yearsActive} anos de carreira</span>
+            <span className="text-lg font-medium">+ de {artistInfo?.yearsActive || '15'} anos de carreira</span>
           </div>
 
           {/* Description */}
           <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-12 leading-relaxed">
-            {artistInfo.description}
+            {artistInfo?.description || 'Carregando descrição...'}
           </p>
 
           {/* CTA Buttons */}

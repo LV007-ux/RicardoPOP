@@ -1,7 +1,33 @@
 import React from 'react';
-import { biography } from '../data/mock';
+import { useBiography } from '../hooks/useApi';
+import { Loader2 } from 'lucide-react';
 
 const Biography = () => {
+  const { data: biography, loading, error } = useBiography();
+
+  if (loading) {
+    return (
+      <section id="biografia" className="py-20 bg-gradient-to-br from-blue-50 to-red-50">
+        <div className="container mx-auto px-6 flex items-center justify-center">
+          <div className="flex items-center space-x-3">
+            <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+            <span className="text-lg text-slate-600">Carregando biografia...</span>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error || !biography) {
+    return (
+      <section id="biografia" className="py-20 bg-gradient-to-br from-blue-50 to-red-50">
+        <div className="container mx-auto px-6 text-center">
+          <p className="text-red-600">Erro ao carregar biografia</p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="biografia" className="py-20 bg-gradient-to-br from-blue-50 to-red-50">
       <div className="container mx-auto px-6">
